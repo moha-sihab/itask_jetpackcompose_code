@@ -1,0 +1,146 @@
+package com.sihabudin.itask.component
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Divider
+import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
+import androidx.compose.material.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.sihabudin.itask.core.domain.model.CategoryModel
+import com.sihabudin.itask.core.utils.Common
+import com.sihabudin.itask.theme.Netral40
+import com.sihabudin.itask.theme.SecondaryColor
+import com.sihabudin.itask.theme.SecondaryDarkColor
+import java.util.*
+
+@Composable
+fun LazyListCategory(
+    modifier: Modifier = Modifier,
+    categoryList: List<CategoryModel>,
+    masterPage: Boolean = false,
+    onClick: (CategoryModel) -> Unit = {},
+    onSwitchChange: (CategoryModel) -> Unit = {},
+) {
+    val listState = rememberLazyListState()
+    LazyColumn(state = listState) {
+        items(categoryList, key = { it.id_category }) { category ->
+            LazyListCategoryItem(
+                category = category,
+                masterPage = masterPage,
+                onClick = onClick,
+                onSwitchChange = onSwitchChange
+            )
+        }
+    }
+}
+
+@Composable
+fun LazyListCategoryItem(
+    modifier: Modifier = Modifier,
+    category: CategoryModel,
+    masterPage: Boolean = false,
+    onClick: (CategoryModel) -> Unit = {},
+    onSwitchChange: (CategoryModel) -> Unit = {},
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth()
+    ) {
+        var activeState by remember { mutableStateOf(category.isActive) }
+        Box(
+            modifier = Modifier
+                .padding(8.dp)
+                .width(40.dp)
+                .height(40.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = Common.gradientColorList(colorLabel = category.colorLabel.lowercase())
+                    ), shape = CircleShape
+                )
+                .clickable { onClick(category) },
+        )
+
+        Box(
+            modifier = Modifier
+                .weight(3f)
+                .padding(8.dp)
+                .width(40.dp)
+                .height(40.dp)
+                .clickable { onClick(category) },
+        ) {
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterStart),
+                text = category.category,
+                fontSize = 15.sp,
+                color = Netral40,
+            )
+        }
+        if (masterPage) {
+            Switch(
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = SecondaryColor,
+                    checkedTrackColor = SecondaryDarkColor
+                ),
+                modifier = Modifier.weight(1f), checked = activeState, onCheckedChange = {
+                    onSwitchChange(category)
+                    activeState = it
+                })
+        }
+
+
+    }
+    Divider()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LazyListCategoryItemPreview() {
+    val category1 = CategoryModel(
+        id_category = 1,
+        category = "Home",
+        isActive = true,
+        colorLabel = "red",
+        createDate = Date(1670855037),
+        createBy = "Test",
+        updateDate = Date(1670855037),
+        updateBy = "Test"
+    )
+
+    val category2 = CategoryModel(
+        id_category = 2,
+        category = "Personal",
+        isActive = true,
+        colorLabel = "blue",
+        createDate = Date(1670855037),
+        createBy = "Test",
+        updateDate = Date(1670855037),
+        updateBy = "Test"
+    )
+
+    val category3 = CategoryModel(
+        id_category = 3,
+        category = "Work",
+        isActive = false,
+        colorLabel = "purple",
+        createDate = Date(1670855037),
+        createBy = "Test",
+        updateDate = Date(1670855037),
+        updateBy = "Test"
+    )
+
+    LazyListCategory(categoryList = listOf(category1, category2, category3), masterPage = true)
+}
