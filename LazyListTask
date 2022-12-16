@@ -1,0 +1,188 @@
+package com.sihabudin.itask.component
+
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxDefaults
+import androidx.compose.material.Divider
+import androidx.compose.material.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.sihabudin.itask.core.domain.model.TaskWithCategoryModel
+import com.sihabudin.itask.core.utils.Common
+import com.sihabudin.itask.core.utils.Common.Companion.gradientColorList
+import com.sihabudin.itask.core.utils.DateFormater
+import com.sihabudin.itask.core.utils.textLimit
+import com.sihabudin.itask.theme.Netral40
+import com.sihabudin.itask.theme.PrimaryColor
+import java.util.*
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun LazyListTask(
+    modifier: Modifier = Modifier,
+    taskList: List<TaskWithCategoryModel>,
+    onCheckedChange: (TaskWithCategoryModel) -> Unit = {},
+    onClick: (TaskWithCategoryModel) -> Unit = {},
+) {
+    val listState = rememberLazyListState()
+    LazyColumn(state = listState) {
+        items(taskList, key = { it.id_task }) { task ->
+            LazyListItem(
+                taskData = task,
+                onCheckedChange = onCheckedChange,
+                onClick = onClick,
+                modifier = Modifier.animateItemPlacement(
+                    animationSpec = tween(
+                        durationMillis = 100
+                    )
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun LazyListItem(
+    modifier: Modifier = Modifier,
+    taskData: TaskWithCategoryModel,
+    onCheckedChange: (TaskWithCategoryModel) -> Unit = {},
+    onClick: (TaskWithCategoryModel) -> Unit = {},
+) {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .clickable { onClick(taskData) }) {
+        Box(
+            modifier = Modifier
+                .padding(8.dp)
+                .width(40.dp)
+                .height(40.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = gradientColorList(colorLabel = taskData.colorLabel.lowercase())
+                    ), shape = CircleShape
+                ),
+        )
+        Column(modifier = Modifier.weight(3f), verticalArrangement = Arrangement.SpaceAround) {
+            Text(
+                modifier = Modifier.padding(start = 10.dp, top = 8.dp),
+                text = taskData.title.textLimit(30),
+                fontSize = 15.sp,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                val dueDate = taskData.due_date?.let {
+                    DateFormater.stringDateWithHourMinute(
+                        it
+                    )
+                }
+                Text(
+                    modifier = Modifier.padding(start = 10.dp, top = 2.dp),
+                    text = taskData.category,
+                    fontSize = 12.sp,
+                    color = Netral40,
+                )
+                Text(
+                    modifier = Modifier.padding(end = 8.dp, top = 2.dp),
+                    text = dueDate.toString(),
+                    fontSize = 12.sp,
+                    color = Netral40,
+                )
+            }
+        }
+        Row(
+            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            var checkedState by remember { mutableStateOf(Common.setCheckedTask(taskData.status.lowercase())) }
+            Checkbox(
+                colors = CheckboxDefaults.colors(checkedColor = PrimaryColor),
+                checked = checkedState,
+                onCheckedChange = {
+                    onCheckedChange(taskData)
+                    checkedState = it
+                }
+            )
+        }
+
+
+    }
+    Divider()
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun LazyListItemPreview() {
+    val taskData = TaskWithCategoryModel(
+        id_task = 1L,
+        title = "Learning Jetpack Compose",
+        detail = "belajar lagi",
+        due_date = Date(1670855031),
+        isSetDate = true,
+        isAlarm = true,
+        idAlarm = 1,
+        id_category = 1,
+        status = "completed",
+        createDate = Date(1670855037),
+        createBy = "test",
+        updateDate = Date(1670855037),
+        updateBy = "test",
+        category = "Home",
+        colorLabel = "purple"
+    )
+
+    val taskData2 = TaskWithCategoryModel(
+        id_task = 2L,
+        title = "Learning Jetpack Compose 2",
+        detail = "belajar lagi 2",
+        due_date = Date(1670855031),
+        isSetDate = true,
+        isAlarm = true,
+        idAlarm = 1,
+        id_category = 1,
+        status = "OPEN",
+        createDate = Date(1670855037),
+        createBy = "test",
+        updateDate = Date(1670855037),
+        updateBy = "test",
+        category = "Work",
+        colorLabel = "red"
+    )
+
+    val taskData3 = TaskWithCategoryModel(
+        id_task = 3L,
+        title = "Learning Jetpack Compose Learning Jetpack Compose",
+        detail = "belajar lagi 3",
+        due_date = Date(1670855031),
+        isSetDate = true,
+        isAlarm = true,
+        idAlarm = 1,
+        id_category = 1,
+        status = "COMPLETED",
+        createDate = Date(1670855037),
+        createBy = "test",
+        updateDate = Date(1670855037),
+        updateBy = "test",
+        category = "Personal",
+        colorLabel = "green"
+    )
+
+
+    val lazyList: List<TaskWithCategoryModel> = listOf(taskData, taskData2, taskData3)
+
+    LazyListTask(taskList = lazyList)
+}
